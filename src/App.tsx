@@ -1,11 +1,11 @@
-import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "./assets/vite.svg";
 import heroImg from "./assets/hero.png";
 import "./App.css";
+import { useCounterStore } from "./stores/useCounterStore";
 
 function App() {
-  const [count, setCount] = useState(0);
+  const { count, increment, decrement, reset } = useCounterStore();
 
   return (
     <>
@@ -21,12 +21,16 @@ function App() {
             Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
           </p>
         </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+        <div className="flex items-center gap-3">
+          <button className="counter" onClick={decrement}>
+            -
+          </button>
+          <span className="counter">Count is {count}</span>
+          <button className="counter" onClick={increment}>
+            +
+          </button>
+        </div>
+        <button onClick={reset}>Reset</button>
       </section>
 
       <div className="ticks"></div>
