@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home Screen Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #e5e7eb; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    .phone {
+      width: 390px;
+      height: 844px;
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.25), 0 0 0 12px #1a1a1a;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .phone-inner { width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; }
+    .label { text-align: center; font-size: 14px; font-weight: 700; color: #6b7280; margin-top: 16px; letter-spacing: 0.05em; }
+  </style>
+</head>
+<body>
+  <div style="padding: 48px 32px; display: flex; gap: 48px; align-items: flex-start; justify-content: center; flex-wrap: wrap; min-height: 100vh;">
+
+    <!-- 안 A -->
+    <div>
+      <div class="phone">
+        <div class="phone-inner" style="background: white;">
+          <div class="min-h-screen flex flex-col items-center justify-between px-6 py-14">
+            <div class="flex-1 flex flex-col items-center justify-center gap-6 w-full">
+              <!-- 퍼즐 아이콘 장식 -->
+              <div class="relative" style="width:160px;height:160px;">
+                <div class="absolute inset-0 rounded-3xl overflow-hidden shadow-xl">
+                  <div style="width:100%;height:100%;background:linear-gradient(135deg,#818cf8,#a78bfa,#c084fc);display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:3px;">
+                    <div style="background:rgba(255,255,255,0.3);border-radius:8px;"></div>
+                    <div style="background:rgba(255,255,255,0.15);border-radius:8px;"></div>
+                    <div style="background:rgba(255,255,255,0.15);border-radius:8px;"></div>
+                    <div style="background:rgba(255,255,255,0.0);border-radius:8px;border:2px dashed rgba(255,255,255,0.4)"></div>
+                  </div>
+                </div>
+                <!-- 빠진 조각 -->
+                <div class="absolute shadow-lg" style="width:64px;height:64px;bottom:-8px;right:-8px;background:linear-gradient(135deg,#c084fc,#818cf8);border-radius:12px;transform:rotate(12deg);"></div>
+              </div>
+
+              <div class="text-center mt-4">
+                <h1 class="text-4xl font-black text-gray-800" style="letter-spacing:-0.03em;">Jigsaw</h1>
+                <p class="text-gray-400 text-sm mt-2">사진으로 만드는 나만의 퍼즐</p>
+              </div>
+            </div>
+
+            <div class="w-full flex flex-col gap-3">
+              <button class="w-full text-white rounded-2xl py-4 font-bold text-lg shadow-lg" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+                퍼즐 시작하기
+              </button>
+              <button class="w-full bg-white text-gray-700 rounded-2xl py-4 font-semibold shadow">
+                내 퍼즐 만들기
+              </button>
+              <button class="w-full text-gray-400 py-3 font-medium text-sm">
+                로그인
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="label">안 A — 심플 런처</div>
+    </div>
+
+    <!-- 안 B -->
+    <div>
+      <div class="phone">
+        <div class="phone-inner" style="background:#0f0f1a;">
+          <div class="relative min-h-screen flex flex-col" style="overflow:hidden;">
+            <!-- 배경 그리드 -->
+            <div class="absolute inset-0" style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:2px;opacity:0.35;">
+              <div style="background:linear-gradient(135deg,#fca5a5,#f87171);aspect-ratio:1;border-radius:6px;"></div>
+              <div style="background:linear-gradient(135deg,#93c5fd,#60a5fa);aspect-ratio:1;border-radius:6px;"></div>
+              <div style="background:linear-gradient(135deg,#86efac,#4ade80);aspect-ratio:1;border-radius:6px;"></div>
+              <div style="background:linear-gradient(135deg,#fcd34d,#fbbf24);aspect-ratio:1;border-radius:6px;"></div>
+              <div style="background:linear-gradient(135deg,#c4b5fd,#a78bfa);aspect-ratio:1;border-radius:6px;"></div>
+              <div style="background:linear-gradient(135deg,#f9a8d4,#f472b6);aspect-ratio:1;border-radius:6px;"></div>
+              <div style="background:linear-gradient(135deg,#67e8f9,#22d3ee);aspect-ratio:1;border-radius:6px;"></div>
+              <div style="background:linear-gradient(135deg,#fdba74,#fb923c);aspect-ratio:1;border-radius:6px;"></div>
+              <div style="background:linear-gradient(135deg,#6ee7b7,#34d399);aspect-ratio:1;border-radius:6px;"></div>
+              <div style="background:linear-gradient(135deg,#a5f3fc,#67e8f9);aspect-ratio:1;border-radius:6px;"></div>
+              <div style="background:linear-gradient(135deg,#fca5a5,#f87171);aspect-ratio:1;border-radius:6px;"></div>
+              <div style="background:linear-gradient(135deg,#c4b5fd,#a78bfa);aspect-ratio:1;border-radius:6px;"></div>
+              <div style="background:linear-gradient(135deg,#93c5fd,#60a5fa);aspect-ratio:1;border-radius:6px;"></div>
+              <div style="background:linear-gradient(135deg,#86efac,#4ade80);aspect-ratio:1;border-radius:6px;"></div>
+              <div style="background:linear-gradient(135deg,#fcd34d,#fbbf24);aspect-ratio:1;border-radius:6px;"></div>
+              <div style="background:linear-gradient(135deg,#f9a8d4,#f472b6);aspect-ratio:1;border-radius:6px;"></div>
+            </div>
+            <!-- 그라데이션 오버레이 -->
+            <div class="absolute inset-0" style="background:linear-gradient(to bottom, rgba(15,15,26,0.5) 0%, rgba(15,15,26,0.2) 40%, rgba(15,15,26,0.85) 70%, rgba(15,15,26,1) 100%);"></div>
+
+            <!-- 콘텐츠 -->
+            <div class="relative flex flex-col min-h-screen px-6 py-14">
+              <div class="flex-1 flex flex-col items-center justify-center gap-3 text-center">
+                <div class="text-6xl">🧩</div>
+                <h1 class="text-5xl font-black text-white" style="letter-spacing:-0.04em;">JIGSAW</h1>
+                <p class="text-gray-400 text-sm">내 사진으로 만드는 퍼즐</p>
+              </div>
+
+              <div class="flex flex-col gap-3">
+                <button class="w-full text-gray-900 rounded-full py-4 font-bold text-base" style="background:white;">
+                  ▶ &nbsp;바로 플레이
+                </button>
+                <div class="flex gap-3">
+                  <button class="flex-1 rounded-full py-3 font-medium text-sm text-white" style="background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);">
+                    만들기
+                  </button>
+                  <button class="flex-1 rounded-full py-3 font-medium text-sm text-white" style="background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);">
+                    로그인
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="label">안 B — 다크 갤러리</div>
+    </div>
+
+    <!-- 안 C -->
+    <div>
+      <div class="phone">
+        <div class="phone-inner" style="background:#f3f4f6;">
+          <!-- 상단 헤더 -->
+          <div class="px-6 pt-14 pb-6" style="background:white;">
+            <div class="flex items-center justify-between mb-5">
+              <div>
+                <p class="text-gray-400 text-sm">안녕하세요 👋</p>
+                <h1 class="text-2xl font-bold text-gray-800">오늘의 퍼즐</h1>
+              </div>
+              <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg" style="background:#e0e7ff;">
+                👤
+              </div>
+            </div>
+
+            <!-- 이어하기 카드 -->
+            <div class="relative rounded-2xl p-5 text-white shadow-lg" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+              <p class="text-xs mb-1" style="opacity:0.7;">이어하기</p>
+              <p class="font-bold text-lg mb-3">제주도 여행 🌊</p>
+              <div class="rounded-full h-2 mb-1" style="background:rgba(255,255,255,0.25);">
+                <div class="rounded-full h-2" style="width:64%;background:white;"></div>
+              </div>
+              <p class="text-xs" style="opacity:0.7;">16/25 조각 완성</p>
+              <button class="absolute right-5 font-bold text-sm rounded-full px-4 py-2 shadow" style="top:50%;transform:translateY(-50%);background:white;color:#6366f1;">
+                계속 ▶
+              </button>
+            </div>
+          </div>
+
+          <!-- 빠른 메뉴 -->
+          <div class="px-6 py-4 flex gap-3">
+            <button class="flex-1 bg-white rounded-2xl p-4 shadow-sm flex flex-col items-center gap-2">
+              <span class="text-2xl">📷</span>
+              <span class="text-xs font-medium text-gray-600">새 퍼즐</span>
+            </button>
+            <button class="flex-1 bg-white rounded-2xl p-4 shadow-sm flex flex-col items-center gap-2">
+              <span class="text-2xl">🔍</span>
+              <span class="text-xs font-medium text-gray-600">탐색</span>
+            </button>
+            <button class="flex-1 bg-white rounded-2xl p-4 shadow-sm flex flex-col items-center gap-2">
+              <span class="text-2xl">🏆</span>
+              <span class="text-xs font-medium text-gray-600">랭킹</span>
+            </button>
+          </div>
+
+          <!-- 추천 퍼즐 -->
+          <div class="px-6 pb-8">
+            <p class="font-bold text-gray-700 mb-3">인기 퍼즐</p>
+            <div class="flex flex-col gap-3">
+              <div class="bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+                <div class="w-14 h-14 rounded-xl flex-shrink-0" style="background:linear-gradient(135deg,#fb923c,#ef4444);"></div>
+                <div class="flex-1">
+                  <p class="font-semibold text-gray-800 text-sm">🏔️ 설악산 단풍</p>
+                  <p class="text-xs text-gray-400 mt-0.5">4×4 · 보통</p>
+                </div>
+                <span class="text-indigo-500 font-bold text-sm">▶</span>
+              </div>
+              <div class="bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+                <div class="w-14 h-14 rounded-xl flex-shrink-0" style="background:linear-gradient(135deg,#f472b6,#ec4899);"></div>
+                <div class="flex-1">
+                  <p class="font-semibold text-gray-800 text-sm">🌸 벚꽃 거리</p>
+                  <p class="text-xs text-gray-400 mt-0.5">3×3 · 쉬움</p>
+                </div>
+                <span class="text-indigo-500 font-bold text-sm">▶</span>
+              </div>
+              <div class="bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+                <div class="w-14 h-14 rounded-xl flex-shrink-0" style="background:linear-gradient(135deg,#fbbf24,#f97316);"></div>
+                <div class="flex-1">
+                  <p class="font-semibold text-gray-800 text-sm">🌅 한라산 일출</p>
+                  <p class="text-xs text-gray-400 mt-0.5">5×5 · 어려움</p>
+                </div>
+                <span class="text-indigo-500 font-bold text-sm">▶</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="label">안 C — 피드형</div>
+    </div>
+
+  </div>
+</body>
+</html>

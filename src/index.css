@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "tailwind-scrollbar-hide";
 
 @font-face {
   font-family: "Pretendard";
@@ -12,4 +13,15 @@
   margin: 0;
   box-sizing: border-box;
   font-family: "Pretendard";
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateX(250%) skewX(-20deg);
+    opacity: 0;
+  }
 }

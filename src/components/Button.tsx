@@ -6,7 +6,8 @@ interface ButtonProps {
   children: React.ReactNode;
 }
 
-const COMMON_CLASS = "";
+const COMMON_CLASS =
+  "flex justify-center p-3 bg-white rounded-lg font-semibold shadow hover:shadow-md active:bg-gray-50 transition-shadow";
 
 export function Button({ to, children }: ButtonProps) {
   return (
