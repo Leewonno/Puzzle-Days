@@ -32,16 +32,16 @@ export default function HomeScreen() {
       </div>
 
       {/* 버튼 영역 */}
-      <div className="w-full flex flex-col gap-3">
+      <div className="w-full flex flex-col gap-3 pb-5">
         <button
-          className="w-full text-white rounded-2xl py-4 font-semibold text-lg shadow-lg"
+          className="w-full text-white rounded-2xl py-3 font-semibold text-lg shadow-lg"
           style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}
           onClick={() => navigate("/gamelist")}
         >
           퍼즐 시작하기
         </button>
         <button
-          className="w-full bg-white text-gray-700 rounded-2xl py-4 font-semibold shadow"
+          className="w-full bg-white text-gray-700 rounded-2xl py-3 font-semibold shadow"
           onClick={() => navigate("/create")}
         >
           내 퍼즐 만들기
