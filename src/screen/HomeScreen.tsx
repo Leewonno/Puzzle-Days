@@ -8,27 +8,27 @@ export default function HomeScreen() {
 
   return (
     <div
-      className="flex flex-col items-center justify-between px-6 pb-10 w-full"
+      className="flex flex-col items-center justify-between px-6 pb-15 w-full"
       style={{
         minHeight: "100svh",
         paddingTop: "calc(env(safe-area-inset-top) + 3rem)",
       }}
     >
       {/* 히어로 영역 */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 w-full">
+      <div className="flex-1 flex flex-col items-center justify-center gap-8 w-full">
         {/* 앱 아이콘 */}
         <img
           src={icon}
           className="rounded-3xl"
-          style={{ width: 200, height: 200 }}
+          style={{ width: 350, height: 350 }}
         />
 
         {/* 타이틀 */}
-        <div className="text-center flex flex-col gap-4">
+        {/* <div className="text-center flex flex-col gap-4">
           <p className="text-gray-400 text-sm mt-2">
             사진으로 만드는 나만의 퍼즐
           </p>
-        </div>
+        </div> */}
       </div>
 
       {/* 버튼 영역 */}
@@ -38,7 +38,7 @@ export default function HomeScreen() {
           style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}
           onClick={() => navigate("/gamelist")}
         >
-          퍼즐 시작하기
+          시작하기
         </button>
         <button
           className="w-full bg-white text-gray-700 rounded-2xl py-3 font-semibold shadow"

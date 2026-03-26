@@ -44,6 +44,20 @@ export async function hideBannerAd(): Promise<void> {
   await AdMob.removeBanner();
 }
 
+export async function resumeBanner(): Promise<void> {
+  if (!Capacitor.isNativePlatform()) return;
+
+  const { AdMob } = await import("@capacitor-community/admob");
+  await AdMob.resumeBanner();
+}
+
+export async function pauseBanner(): Promise<void> {
+  if (!Capacitor.isNativePlatform()) return;
+
+  const { AdMob } = await import("@capacitor-community/admob");
+  await AdMob.hideBanner();
+}
+
 export async function initAdMob(): Promise<void> {
   if (!Capacitor.isNativePlatform()) return;
 

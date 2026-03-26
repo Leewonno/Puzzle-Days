@@ -6,7 +6,10 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   return (
-    <div className="relative min-h-screen w-full">
+    <div
+      className="relative w-full pb-15"
+      style={{ minHeight: "calc(100vh - 60px)" }}
+    >
       {/* background */}
       <div className="fixed inset-0 -z-10 h-screen"></div>
       <div

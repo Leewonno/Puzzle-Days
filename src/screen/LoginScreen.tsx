@@ -1,16 +1,36 @@
-import { useState } from "react";
-import icon from "../assets/icon_no_bg.png";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import icon from "../assets/icon.png";
 import { TermsModal, PrivacyModal } from "../features";
+import { signInWithGoogle } from "../utils/auth";
+import { useUserStore } from "../stores/useUserStore";
 
 export default function LoginScreen() {
+  const navigate = useNavigate();
+  const isAuthenticated = useUserStore((s) => s.isAuthenticated);
   const [termsOpen, setTermsOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+
+  // 로그인 성공 시 이전 화면으로
+  useEffect(() => {
+    if (isAuthenticated) navigate(-1);
+  }, [isAuthenticated, navigate]);
+
+  async function handleGoogleSignIn() {
+    setSigningIn(true);
+    try {
+      await signInWithGoogle();
+    } finally {
+      setSigningIn(false);
+    }
+  }
 
   return (
     <div
       className="flex flex-col items-center justify-center w-full bg-white"
       style={{
-        minHeight: "calc(100svh - env(safe-area-inset-top) - 5.5rem)",
+        minHeight: "calc(100svh - env(safe-area-inset-top) - 9.5rem)",
       }}
     >
       {/* 플로팅 카드 */}
@@ -19,8 +39,8 @@ export default function LoginScreen() {
           {/* 앱 아이콘 */}
           <img
             src={icon}
-            className="rounded-2xl"
-            style={{ width: 72, height: 72 }}
+            className="rounded-2xl shadow-xl"
+            style={{ width: 150, height: 150 }}
           />
 
           {/* 앱명 + 태그라인 */}
@@ -29,6 +49,8 @@ export default function LoginScreen() {
           </div>
 
           <button
+            disabled={signingIn}
+            onClick={() => void handleGoogleSignIn()}
             className="
               w-full
               flex items-center justify-center gap-3
@@ -39,6 +61,7 @@ export default function LoginScreen() {
               hover:shadow-md hover:bg-gray-50
               active:bg-gray-100
               transition
+              disabled:opacity-50
             "
           >
             <svg className="w-5 h-5" viewBox="0 0 48 48">
@@ -59,9 +82,8 @@ export default function LoginScreen() {
                 d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
               />
             </svg>
-
             <span className="text-sm font-medium font-[Roboto]">
-              Sign in with Google
+              {signingIn ? "로그인 중..." : "Sign in with Google"}
             </span>
           </button>
 

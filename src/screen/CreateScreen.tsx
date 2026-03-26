@@ -1,6 +1,10 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import { ImagePlus, ZoomIn, ZoomOut } from "lucide-react";
+import { supabase } from "../lib/supabase";
+import { useUserStore } from "../stores/useUserStore";
+import { uploadImage } from "../lib/storage";
 
 export default function CreateScreen() {
   const navigate = useNavigate();
@@ -13,6 +17,8 @@ export default function CreateScreen() {
     startOX: number;
     startOY: number;
   } | null>(null);
+
+  const { user } = useUserStore();
 
   const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [naturalW, setNaturalW] = useState(0);
@@ -66,7 +72,15 @@ export default function CreateScreen() {
     if (!dragRef.current) return;
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
-    setOffset(clamp(dragRef.current.startOX + dx, dragRef.current.startOY + dy, scale, naturalW, naturalH));
+    setOffset(
+      clamp(
+        dragRef.current.startOX + dx,
+        dragRef.current.startOY + dy,
+        scale,
+        naturalW,
+        naturalH,
+      ),
+    );
   }
 
   function handlePointerUp() {
@@ -86,8 +100,8 @@ export default function CreateScreen() {
   function getCroppedDataURL(): string {
     const C = containerSize();
     const canvas = document.createElement("canvas");
-    canvas.width = 600;
-    canvas.height = 600;
+    canvas.width = 1000;
+    canvas.height = 1000;
     const ctx = canvas.getContext("2d")!;
     ctx.drawImage(
       loadedImgRef.current!,
@@ -95,17 +109,27 @@ export default function CreateScreen() {
       -offset.y / scale,
       C / scale,
       C / scale,
-      0, 0, 600, 600,
+      0,
+      0,
+      1000,
+      1000,
     );
     return canvas.toDataURL("image/jpeg", 0.9);
   }
 
-  function handleCreate() {
-    if (!imgSrc || !title.trim()) return;
-    getCroppedDataURL();
-    // TODO: upload to server with title + cropped image
-    navigate("/");
-  }
+  const createPuzzle = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("로그인이 필요합니다.");
+      const dataUrl = getCroppedDataURL();
+      const path = `${user.id}/${Date.now()}.jpg`;
+      const imgUrl = await uploadImage(dataUrl, path);
+      const { error } = await supabase
+        .from("puzzle")
+        .insert({ auth_id: user.id, title: title.trim(), img: imgUrl });
+      if (error) throw error;
+    },
+    onSuccess: () => navigate("/my"),
+  });
 
   const canCreate = !!imgSrc && title.trim().length > 0;
 
@@ -156,13 +180,21 @@ export default function CreateScreen() {
           >
             <div
               className="w-20 h-20 rounded-2xl flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, #e0e7ff, #ede9fe)" }}
+              style={{
+                background: "linear-gradient(135deg, #e0e7ff, #ede9fe)",
+              }}
             >
-              <ImagePlus size={36} className="text-indigo-400" strokeWidth={1.5} />
+              <ImagePlus
+                size={36}
+                className="text-indigo-400"
+                strokeWidth={1.5}
+              />
             </div>
             <div className="text-center">
               <p className="text-sm font-semibold text-gray-600">사진 선택</p>
-              <p className="text-xs text-gray-400 mt-1">갤러리에서 이미지를 불러옵니다</p>
+              <p className="text-xs text-gray-400 mt-1">
+                갤러리에서 이미지를 불러옵니다
+              </p>
             </div>
           </button>
         )}
@@ -206,23 +238,29 @@ export default function CreateScreen() {
           className="w-full px-4 py-3 rounded-xl border text-sm outline-none bg-white"
           style={{
             borderColor: title.length > 0 ? "#a5b4fc" : "#e5e7eb",
-            boxShadow: title.length > 0 ? "0 0 0 3px rgba(99,102,241,0.1)" : "none",
+            boxShadow:
+              title.length > 0 ? "0 0 0 3px rgba(99,102,241,0.1)" : "none",
           }}
         />
-        <span className="text-xs text-gray-400 text-right">{title.length} / 30</span>
+        <span className="text-xs text-gray-400 text-right">
+          {title.length} / 30
+        </span>
       </div>
 
       {/* 만들기 버튼 */}
       <button
-        disabled={!canCreate}
+        disabled={!canCreate || createPuzzle.isPending}
         className="w-full py-4 rounded-2xl font-bold text-base transition-all active:scale-95"
         style={{
-          background: canCreate ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "#f3f4f6",
-          color: canCreate ? "white" : "#9ca3af",
+          background:
+            canCreate && !createPuzzle.isPending
+              ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
+              : "#f3f4f6",
+          color: canCreate && !createPuzzle.isPending ? "white" : "#9ca3af",
         }}
-        onClick={handleCreate}
+        onClick={() => createPuzzle.mutate()}
       >
-        퍼즐 만들기
+        만들기
       </button>
 
       <input

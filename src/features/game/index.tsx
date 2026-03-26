@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "../../stores/useGameStore";
+import { useUserStore } from "../../stores/useUserStore";
 import { playFanfare, playSuccessSound } from "../../utils/sound";
-import {
-  showInterstitialAd,
-  showBannerAd,
-  hideBannerAd,
-} from "../../utils/admob";
+import { supabase } from "../../lib/supabase";
+import { showInterstitialAd } from "../../utils/admob";
 import { CompletionModal } from "./components/CompletionModal";
 import { PuzzleBoard } from "./components/PuzzleBoard";
 import type { Piece, BoardCell, Selected } from "./types";
@@ -93,27 +91,23 @@ function drawPiecePath(
 }
 
 export function Game() {
-  const { img, gridSize } = useGameStore();
+  const { img, gridSize, puzzleId } = useGameStore();
+  const { user } = useUserStore();
   const [pieces, setPieces] = useState<Piece[]>([]);
   const [board, setBoard] = useState<BoardCell[]>([]);
   const [selected, setSelected] = useState<Selected>(null);
   const [restartKey, setRestartKey] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerStarted = useRef(false);
   const zIndexCounter = useRef(1);
   const fanfarePlayed = useRef(false);
+  const finalElapsed = useRef(0);
 
   const isCompleted =
     board.length > 0 && board.every((cell) => cell?.locked === true);
-
-  useEffect(() => {
-    void showBannerAd();
-    return () => {
-      void hideBannerAd();
-    };
-  }, []);
 
   const startTimer = () => {
     if (timerStarted.current) return;
@@ -127,7 +121,18 @@ export function Game() {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
+      finalElapsed.current = elapsedSeconds;
     }
+  };
+
+  const saveRecord = async () => {
+    if (!puzzleId || !user) return;
+    await supabase.rpc("complete_puzzle", {
+      p_puzzle_id: puzzleId,
+      p_user_id: user.id,
+      p_time: finalElapsed.current,
+      p_grid_size: gridSize,
+    });
   };
 
   const resetTimer = () => {
@@ -141,7 +146,9 @@ export function Game() {
       fanfarePlayed.current = true;
       stopTimer();
       void playFanfare();
+      void saveRecord();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCompleted]);
 
   useEffect(() => () => stopTimer(), []);
@@ -158,21 +165,36 @@ export function Game() {
   useEffect(() => {
     if (!img || gridSize <= 0) return;
 
-    const image = new Image();
-    image.crossOrigin = "anonymous";
-    image.src = img;
+    let cancelled = false;
+    let objectUrl: string | null = null;
 
-    image.onload = () => {
-      const size = Math.min(image.width, image.height);
-      const sx = (image.width - size) / 2;
-      const sy = (image.height - size) / 2;
+    const run = async () => {
+      setIsGenerating(true);
+      const blob = await fetch(img).then((r) => r.blob());
+      if (cancelled) return;
+
+      objectUrl = URL.createObjectURL(blob);
+
+      const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const el = new Image();
+        el.onload = () => resolve(el);
+        el.onerror = reject;
+        el.src = objectUrl!;
+      });
+      if (cancelled) return;
+
+      const MAX_SIZE = 800;
+      const naturalSize = Math.min(image.width, image.height);
+      const size = Math.min(naturalSize, MAX_SIZE);
+      const sx = (image.width - naturalSize) / 2;
+      const sy = (image.height - naturalSize) / 2;
 
       const offscreen = document.createElement("canvas");
       offscreen.width = size;
       offscreen.height = size;
       const ctx = offscreen.getContext("2d");
       if (!ctx) return;
-      ctx.drawImage(image, sx, sy, size, size, 0, 0, size, size);
+      ctx.drawImage(image, sx, sy, naturalSize, naturalSize, 0, 0, size, size);
 
       const pieceSize = size / gridSize;
       const padding = Math.ceil(pieceSize * TAB_RATIO);
@@ -188,7 +210,18 @@ export function Game() {
         ),
       );
 
+      const yield_ = () => new Promise<void>((r) => setTimeout(r, 0));
+
+      // reuse a single canvas to avoid exhausting GPU command buffers
+      const pieceCanvas = document.createElement("canvas");
+      pieceCanvas.width = canvasSize;
+      pieceCanvas.height = canvasSize;
+      const pieceCtx = pieceCanvas.getContext("2d");
+      if (!pieceCtx) return;
+
       for (let row = 0; row < gridSize; row++) {
+        if (cancelled) return;
+
         for (let col = 0; col < gridSize; col++) {
           const originalIndex = row * gridSize + col;
           const topType = row === 0 ? 0 : -hEdge[row - 1][col];
@@ -196,12 +229,9 @@ export function Game() {
           const leftType = col === 0 ? 0 : -vEdge[row][col - 1];
           const rightType = col === gridSize - 1 ? 0 : vEdge[row][col];
 
-          const pieceCanvas = document.createElement("canvas");
-          pieceCanvas.width = canvasSize;
-          pieceCanvas.height = canvasSize;
-          const pieceCtx = pieceCanvas.getContext("2d");
-          if (!pieceCtx) continue;
+          pieceCtx.clearRect(0, 0, canvasSize, canvasSize);
 
+          pieceCtx.save();
           drawPiecePath(
             pieceCtx,
             padding,
@@ -224,6 +254,7 @@ export function Game() {
             canvasSize,
             canvasSize,
           );
+          pieceCtx.restore();
 
           drawPiecePath(
             pieceCtx,
@@ -240,8 +271,13 @@ export function Game() {
           pieceCtx.stroke();
 
           newPieces.push({ src: pieceCanvas.toDataURL(), originalIndex });
+
+          // yield after every piece to avoid ANR on Android
+          await yield_();
         }
       }
+
+      if (cancelled) return;
 
       for (let i = newPieces.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -250,6 +286,14 @@ export function Game() {
 
       setPieces(newPieces);
       setBoard(Array(gridSize * gridSize).fill(null));
+      setIsGenerating(false);
+    };
+
+    void run();
+
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
   }, [img, gridSize, restartKey]);
 
@@ -349,16 +393,24 @@ export function Game() {
         <div
           className="flex gap-2 overflow-x-auto scrollbar-hide bg-white rounded-2xl px-3 py-2.5"
           style={{
-            minHeight: 76,
+            minHeight: 108,
             boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
           }}
           onClick={handleStorageTap}
         >
-          {pieces.map((piece, i) => (
+          {isGenerating ? (
+            <div className="flex flex-1 items-center justify-center gap-2 text-gray-400 text-sm">
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+              조각 생성 중...
+            </div>
+          ) : pieces.map((piece, i) => (
             <img
               key={i}
               src={piece.src}
-              className="h-16 shrink-0 cursor-pointer"
+              className="h-24 shrink-0 cursor-pointer"
               style={{
                 borderRadius: 8,
                 outline:
