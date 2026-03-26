@@ -39,24 +39,36 @@ function drawJigsawEdge(
 
   ctx.lineTo(pt(0.35, 0).x, pt(0.35, 0).y);
   ctx.bezierCurveTo(
-    pt(0.38, 0).x, pt(0.38, 0).y,
-    pt(0.43, t * 0.2).x, pt(0.43, t * 0.2).y,
-    pt(0.43, t * 0.3).x, pt(0.43, t * 0.3).y,
+    pt(0.38, 0).x,
+    pt(0.38, 0).y,
+    pt(0.43, t * 0.2).x,
+    pt(0.43, t * 0.2).y,
+    pt(0.43, t * 0.3).x,
+    pt(0.43, t * 0.3).y,
   );
   ctx.bezierCurveTo(
-    pt(0.43, t * 0.75).x, pt(0.43, t * 0.75).y,
-    pt(0.34, t * 0.92).x, pt(0.34, t * 0.92).y,
-    pt(0.5, t).x, pt(0.5, t).y,
+    pt(0.43, t * 0.75).x,
+    pt(0.43, t * 0.75).y,
+    pt(0.34, t * 0.92).x,
+    pt(0.34, t * 0.92).y,
+    pt(0.5, t).x,
+    pt(0.5, t).y,
   );
   ctx.bezierCurveTo(
-    pt(0.66, t * 0.92).x, pt(0.66, t * 0.92).y,
-    pt(0.57, t * 0.75).x, pt(0.57, t * 0.75).y,
-    pt(0.57, t * 0.3).x, pt(0.57, t * 0.3).y,
+    pt(0.66, t * 0.92).x,
+    pt(0.66, t * 0.92).y,
+    pt(0.57, t * 0.75).x,
+    pt(0.57, t * 0.75).y,
+    pt(0.57, t * 0.3).x,
+    pt(0.57, t * 0.3).y,
   );
   ctx.bezierCurveTo(
-    pt(0.57, t * 0.2).x, pt(0.57, t * 0.2).y,
-    pt(0.62, 0).x, pt(0.62, 0).y,
-    pt(0.65, 0).x, pt(0.65, 0).y,
+    pt(0.57, t * 0.2).x,
+    pt(0.57, t * 0.2).y,
+    pt(0.62, 0).x,
+    pt(0.62, 0).y,
+    pt(0.65, 0).x,
+    pt(0.65, 0).y,
   );
   ctx.lineTo(x2, y2);
 }
@@ -190,11 +202,39 @@ export function Game() {
           const pieceCtx = pieceCanvas.getContext("2d");
           if (!pieceCtx) continue;
 
-          drawPiecePath(pieceCtx, padding, padding, pieceSize, topType, rightType, bottomType, leftType);
+          drawPiecePath(
+            pieceCtx,
+            padding,
+            padding,
+            pieceSize,
+            topType,
+            rightType,
+            bottomType,
+            leftType,
+          );
           pieceCtx.clip();
-          pieceCtx.drawImage(offscreen, col * pieceSize - padding, row * pieceSize - padding, canvasSize, canvasSize, 0, 0, canvasSize, canvasSize);
+          pieceCtx.drawImage(
+            offscreen,
+            col * pieceSize - padding,
+            row * pieceSize - padding,
+            canvasSize,
+            canvasSize,
+            0,
+            0,
+            canvasSize,
+            canvasSize,
+          );
 
-          drawPiecePath(pieceCtx, padding, padding, pieceSize, topType, rightType, bottomType, leftType);
+          drawPiecePath(
+            pieceCtx,
+            padding,
+            padding,
+            pieceSize,
+            topType,
+            rightType,
+            bottomType,
+            leftType,
+          );
           pieceCtx.strokeStyle = "rgba(0,0,0,0.25)";
           pieceCtx.lineWidth = 1.5;
           pieceCtx.stroke();
@@ -291,7 +331,7 @@ export function Game() {
   };
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
       <PuzzleBoard
         board={board}
         gridSize={gridSize}
@@ -305,29 +345,39 @@ export function Game() {
       />
 
       {/* 퍼즐 조각 보관함 */}
-      <div
-        className="flex gap-1 overflow-x-auto scrollbar-hide border border-gray-300 rounded-lg p-4 min-h-20"
-        onClick={handleStorageTap}
-      >
-        {pieces.map((piece, i) => (
-          <img
-            key={i}
-            src={piece.src}
-            className="h-20 shrink-0 cursor-pointer"
-            style={{
-              outline:
-                selected?.from === "storage" && selected.index === i
-                  ? "1px solid rgba(99,102,241,0.8)"
-                  : undefined,
-              opacity:
-                selected?.from === "storage" && selected.index !== i ? 0.5 : 1,
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              handlePieceTap(piece, i);
-            }}
-          />
-        ))}
+      <div className="flex flex-col gap-2">
+        <div
+          className="flex gap-2 overflow-x-auto scrollbar-hide bg-white rounded-2xl px-3 py-2.5"
+          style={{
+            minHeight: 76,
+            boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
+          }}
+          onClick={handleStorageTap}
+        >
+          {pieces.map((piece, i) => (
+            <img
+              key={i}
+              src={piece.src}
+              className="h-16 shrink-0 cursor-pointer"
+              style={{
+                borderRadius: 8,
+                outline:
+                  selected?.from === "storage" && selected.index === i
+                    ? "2px solid rgba(99,102,241,0.8)"
+                    : undefined,
+                outlineOffset: 2,
+                opacity:
+                  selected?.from === "storage" && selected.index !== i
+                    ? 0.45
+                    : 1,
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePieceTap(piece, i);
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       <CompletionModal
@@ -335,6 +385,6 @@ export function Game() {
         elapsedSeconds={elapsedSeconds}
         onRestart={() => void handleRestart()}
       />
-    </>
+    </div>
   );
 }
