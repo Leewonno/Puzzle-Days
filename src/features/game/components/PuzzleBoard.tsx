@@ -34,14 +34,25 @@ export function PuzzleBoard({
 }: PuzzleBoardProps) {
   return (
     <>
-      {/* 타이머 + 미리보기 버튼 */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="w-8" />
-        <span className="text-gray-500 text-sm font-mono">
-          {formatTime(elapsedSeconds)}
-        </span>
+      {/* 타이머(중앙) | 미리보기(우) */}
+      <div className="flex items-center justify-between">
+        <div className="w-9" />
+
+        <div
+          className="rounded-full px-5 py-1.5"
+          style={{ background: "#eef2ff" }}
+        >
+          <span
+            className="font-bold text-sm font-mono"
+            style={{ color: "#6366f1" }}
+          >
+            {formatTime(elapsedSeconds)}
+          </span>
+        </div>
+
         <button
-          className="bg-white rounded-full p-1.5 shadow-md"
+          className="w-9 h-9 bg-white rounded-full flex items-center justify-center"
+          style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
           onClick={onTogglePreview}
         >
           {showPreview ? (
@@ -53,18 +64,24 @@ export function PuzzleBoard({
       </div>
 
       {/* 퍼즐판 */}
-      <div className="relative aspect-square w-full">
-        {/* 미리보기 오버레이 (그리드 뒤에 위치) */}
+      <div
+        className="bg-white rounded-2xl aspect-square w-full relative"
+        style={{
+          boxShadow:
+            "0 4px 24px rgba(99,102,241,0.12), 0 1px 6px rgba(0,0,0,0.06)",
+        }}
+      >
+        {/* 미리보기 오버레이 */}
         {showPreview && img && (
           <img
             src={img}
-            className="absolute inset-0 w-full h-full rounded-lg object-cover pointer-events-none"
-            style={{ zIndex: 0, opacity: 0.5 }}
+            className="absolute inset-0 w-full h-full rounded-2xl object-cover pointer-events-none"
+            style={{ zIndex: 0, opacity: 0.45 }}
           />
         )}
 
         <div
-          className="border border-gray-300 aspect-square rounded-lg w-full overflow-hidden"
+          className="aspect-square rounded-2xl w-full overflow-hidden"
           style={{
             display: "grid",
             gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
@@ -79,8 +96,9 @@ export function PuzzleBoard({
               <div
                 key={i}
                 className={`relative aspect-square flex items-center justify-center overflow-visible ${
-                  isTarget ? "border" : ""
-                } border-[rgba(99,102,241,0.5)] border-dotted`}
+                  isTarget ? "border border-dotted" : ""
+                }`}
+                style={{ borderColor: "rgba(99,102,241,0.4)" }}
                 onClick={() => (cell ? onBoardPieceTap(cell, i) : onCellTap(i))}
               >
                 {cell && (
