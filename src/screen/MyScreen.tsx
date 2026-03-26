@@ -1,85 +1,92 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useUserStore } from "../stores/useUserStore";
+import { useGameStore } from "../stores/useGameStore";
 import { signOut } from "../utils/auth";
+import { supabase } from "../lib/supabase";
+import { DifficultyModal } from "../components/DifficultyModal";
 
 type Tab = "created" | "played";
 
-const MOCK_CREATED = [
-  {
-    id: 1,
-    title: "제주 에메랄드빛 바다",
-    size: "16×16",
-    daysAgo: "2일 전",
-    bg: "#fef3c7",
-    emoji: "🌊",
-  },
-  {
-    id: 2,
-    title: "경복궁 봄날",
-    size: "8×8",
-    daysAgo: "5일 전",
-    bg: "#fce7f3",
-    emoji: "🌸",
-  },
-  {
-    id: 3,
-    title: "설악산 단풍",
-    size: "12×12",
-    daysAgo: "1주 전",
-    bg: "#d1fae5",
-    emoji: "🏔️",
-  },
-  {
-    id: 4,
-    title: "부산 해운대 일출",
-    size: "10×10",
-    daysAgo: "2주 전",
-    bg: "#ede9fe",
-    emoji: "🌅",
-  },
-];
+interface MyPuzzle {
+  id: number;
+  title: string;
+  img: string;
+  created_at: string;
+}
 
-const MOCK_PLAYED = [
-  {
-    id: 1,
-    title: "남산 타워 야경",
-    size: "16×16",
-    daysAgo: "어제",
-    bg: "#ede9fe",
-    emoji: "🗼",
-  },
-  {
-    id: 2,
-    title: "담양 대나무숲",
-    size: "8×8",
-    daysAgo: "3일 전",
-    bg: "#ecfdf5",
-    emoji: "🌿",
-  },
-  {
-    id: 3,
-    title: "순천만 갈대밭",
-    size: "12×12",
-    daysAgo: "5일 전",
-    bg: "#fff7ed",
-    emoji: "🦋",
-  },
-  {
-    id: 4,
-    title: "제주 감귤 농장",
-    size: "10×10",
-    daysAgo: "1주 전",
-    bg: "#fef9c3",
-    emoji: "🍊",
-  },
-];
+interface PlayedPuzzle {
+  puzzle_id: number;
+  title: string;
+  img: string;
+  gridSize: number;
+  time: number;
+  created_at: string;
+}
+
+const PAGE_SIZE = 10;
+
+async function fetchMyPuzzles(
+  userId: string,
+  page: number,
+): Promise<MyPuzzle[]> {
+  const { data, error } = await supabase
+    .from("puzzle")
+    .select("id, title, img, created_at")
+    .eq("auth_id", userId)
+    .order("created_at", { ascending: false })
+    .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+  if (error) throw error;
+  return data as MyPuzzle[];
+}
+
+async function fetchPlayedPuzzles(
+  userId: string,
+  page: number,
+): Promise<PlayedPuzzle[]> {
+  const { data, error } = await supabase
+    .from("record")
+    .select(`puzzle_id, gridSize, time, created_at, puzzle(title, img)`)
+    .eq("auth_id", userId)
+    .order("created_at", { ascending: false })
+    .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+  if (error) throw error;
+  return (
+    data as unknown as Array<{
+      puzzle_id: number;
+      gridSize: number;
+      time: number;
+      created_at: string;
+      puzzle: { title: string; img: string };
+    }>
+  ).map((r) => ({
+    puzzle_id: r.puzzle_id,
+    title: r.puzzle.title,
+    img: r.puzzle.img,
+    gridSize: r.gridSize,
+    time: r.time,
+    created_at: r.created_at,
+  }));
+}
+
+interface SelectedPuzzle {
+  id: number;
+  title: string;
+  img: string;
+  defaultGridSize?: number;
+}
 
 export default function MyScreen() {
   const navigate = useNavigate();
   const { user, clearUser } = useUserStore();
+  const setGame = useGameStore((s) => s.setGame);
   const [tab, setTab] = useState<Tab>("created");
   const [withdrawConfirm, setWithdrawConfirm] = useState(false);
+  const [selectedPuzzle, setSelectedPuzzle] = useState<SelectedPuzzle | null>(
+    null,
+  );
+  const [gridSize, setGridSize] = useState(8);
 
   function handleSignOut() {
     clearUser();
@@ -87,7 +94,80 @@ export default function MyScreen() {
     void signOut();
   }
 
-  const list = tab === "created" ? MOCK_CREATED : MOCK_PLAYED;
+  async function handleWithdraw() {
+    await supabase.rpc("delete_user");
+    clearUser();
+    navigate("/");
+  }
+
+  function handleStart() {
+    if (!selectedPuzzle) return;
+    setGame(selectedPuzzle.img, gridSize, selectedPuzzle.id);
+    setSelectedPuzzle(null);
+    navigate("/game");
+  }
+
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const {
+    data: createdData,
+    fetchNextPage: fetchNextCreated,
+    hasNextPage: hasNextCreated,
+    isFetchingNextPage: isFetchingCreated,
+    isLoading: createdLoading,
+  } = useInfiniteQuery({
+    queryKey: ["myPuzzles", user?.id],
+    queryFn: ({ pageParam }) => fetchMyPuzzles(user!.id, pageParam as number),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length < PAGE_SIZE ? undefined : allPages.length,
+    enabled: !!user,
+  });
+
+  const {
+    data: playedData,
+    fetchNextPage: fetchNextPlayed,
+    hasNextPage: hasNextPlayed,
+    isFetchingNextPage: isFetchingPlayed,
+    isLoading: playedLoading,
+  } = useInfiniteQuery({
+    queryKey: ["playedPuzzles", user?.id],
+    queryFn: ({ pageParam }) =>
+      fetchPlayedPuzzles(user!.id, pageParam as number),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length < PAGE_SIZE ? undefined : allPages.length,
+    enabled: !!user,
+  });
+
+  const createdPuzzles = createdData?.pages.flat() ?? [];
+  const playedPuzzles = playedData?.pages.flat() ?? [];
+  const isLoading = tab === "created" ? createdLoading : playedLoading;
+  const isFetchingNextPage =
+    tab === "created" ? isFetchingCreated : isFetchingPlayed;
+  const hasNextPage = tab === "created" ? hasNextCreated : hasNextPlayed;
+  const fetchNextPage = tab === "created" ? fetchNextCreated : fetchNextPlayed;
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          void fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  function formatTime(seconds: number) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return m > 0 ? `${m}분 ${s}초` : `${s}초`;
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -96,7 +176,6 @@ export default function MyScreen() {
         className="bg-white rounded-2xl px-5 py-5 flex flex-col items-center gap-3 shadow"
         style={{ border: "1px solid #f0f0ff" }}
       >
-        {/* 아바타 */}
         {user?.avatar ? (
           <img
             src={user.avatar}
@@ -116,7 +195,6 @@ export default function MyScreen() {
           <p className="text-xs text-gray-400 mt-0.5">{user?.email ?? ""}</p>
         </div>
 
-        {/* 로그아웃 버튼 */}
         <button
           className="text-xs font-semibold text-gray-500 bg-gray-100 rounded-full px-4 py-1.5"
           onClick={() => void handleSignOut()}
@@ -124,7 +202,6 @@ export default function MyScreen() {
           로그아웃
         </button>
 
-        {/* 회원탈퇴 버튼 */}
         {!withdrawConfirm ? (
           <button
             className="text-xs text-red-300 underline"
@@ -137,10 +214,7 @@ export default function MyScreen() {
             <p className="text-xs text-gray-500">정말 탈퇴할까요?</p>
             <button
               className="text-xs font-semibold text-red-400 underline"
-              onClick={() => {
-                /* TODO: withdraw */
-                setWithdrawConfirm(false);
-              }}
+              onClick={() => void handleWithdraw()}
             >
               탈퇴
             </button>
@@ -191,30 +265,115 @@ export default function MyScreen() {
         </button>
       </div>
 
-      {/* 2열 카드 그리드 */}
-      <div className="grid grid-cols-2 gap-3">
-        {list.map((item) => (
-          <div
-            key={item.id}
-            className="bg-white rounded-2xl overflow-hidden shadow cursor-pointer active:scale-95 transition-transform"
-          >
+      {/* 카드 그리드 */}
+      {isLoading ? (
+        <div className="grid grid-cols-2 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
             <div
-              className="w-full aspect-square flex items-center justify-center text-4xl"
-              style={{ background: item.bg }}
+              key={i}
+              className="bg-gray-100 rounded-2xl overflow-hidden animate-pulse"
             >
-              {item.emoji}
+              <div className="aspect-square w-full bg-gray-200" />
+              <div className="px-3 py-2.5 flex flex-col gap-1.5">
+                <div className="h-3 bg-gray-200 rounded w-3/4" />
+                <div className="h-2.5 bg-gray-200 rounded w-1/2" />
+              </div>
             </div>
-            <div className="px-3 py-2.5">
-              <p className="font-bold text-sm text-gray-800 truncate">
-                {item.title}
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {item.size} · {item.daysAgo}
-              </p>
-            </div>
+          ))}
+        </div>
+      ) : tab === "created" ? (
+        createdPuzzles.length === 0 ? (
+          <p className="text-center text-sm text-gray-400 py-10">
+            아직 만든 퍼즐이 없어요
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {createdPuzzles.map((puzzle) => (
+              <div
+                key={puzzle.id}
+                className="bg-white rounded-2xl overflow-hidden shadow cursor-pointer active:scale-95 transition-transform"
+                onClick={() => {
+                  setSelectedPuzzle({
+                    id: puzzle.id,
+                    title: puzzle.title,
+                    img: puzzle.img,
+                  });
+                  setGridSize(8);
+                }}
+              >
+                <div className="aspect-square w-full overflow-hidden">
+                  <img
+                    src={puzzle.img}
+                    alt={puzzle.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="px-3 py-2.5">
+                  <p className="font-bold text-sm text-gray-800 truncate">
+                    {puzzle.title}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {new Date(puzzle.created_at).toLocaleDateString("ko-KR")}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        )
+      ) : playedPuzzles.length === 0 ? (
+        <p className="text-center text-sm text-gray-400 py-10">
+          플레이 기록이 없어요
+        </p>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          {playedPuzzles.map((puzzle) => (
+            <div
+              key={`${puzzle.puzzle_id}-${puzzle.gridSize}`}
+              className="bg-white rounded-2xl overflow-hidden shadow cursor-pointer active:scale-95 transition-transform"
+              onClick={() => {
+                setSelectedPuzzle({
+                  id: puzzle.puzzle_id,
+                  title: puzzle.title,
+                  img: puzzle.img,
+                  defaultGridSize: puzzle.gridSize,
+                });
+                setGridSize(puzzle.gridSize);
+              }}
+            >
+              <div className="aspect-square w-full overflow-hidden">
+                <img
+                  src={puzzle.img}
+                  alt={puzzle.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="px-3 py-2.5">
+                <p className="font-bold text-sm text-gray-800 truncate">
+                  {puzzle.title}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {puzzle.gridSize}×{puzzle.gridSize} ·{" "}
+                  {formatTime(puzzle.time)}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div ref={sentinelRef} className="h-4" />
+      {isFetchingNextPage && (
+        <p className="text-center text-xs text-gray-400 pb-2">불러오는 중...</p>
+      )}
+
+      <DifficultyModal
+        open={selectedPuzzle !== null}
+        title={selectedPuzzle?.title}
+        gridSize={gridSize}
+        onGridSizeChange={setGridSize}
+        onConfirm={handleStart}
+        onCancel={() => setSelectedPuzzle(null)}
+      />
     </div>
   );
 }

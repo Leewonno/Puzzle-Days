@@ -1,5 +1,11 @@
 import { useEffect } from "react";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import {
+  HashRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Capacitor } from "@capacitor/core";
 import HomeScreen from "./screen/HomeScreen";
@@ -11,7 +17,7 @@ import GameListScreen from "./screen/GameListScreen";
 import { Header } from "./nav/Header";
 import { Layout } from "./components";
 import { useAndroidBackButton } from "./hooks/useAndroidBackButton";
-import { initAdMob } from "./utils/admob";
+import { initAdMob, showBannerAd, resumeBanner, pauseBanner } from "./utils/admob";
 import { supabase } from "./lib/supabase";
 import { useUserStore } from "./stores/useUserStore";
 import type { AppUser } from "./stores/useUserStore";
@@ -19,25 +25,62 @@ import type { User } from "@supabase/supabase-js";
 
 function toAppUser(user: User): AppUser {
   const meta = user.user_metadata;
-  console.log(meta);
   return {
     id: user.id,
     email: user.email ?? null,
-    name: (meta.full_name ?? meta.name ?? null) as string | null,
-    avatar: (meta.avatar_url ?? meta.picture ?? null) as string | null,
+    name: (meta.full_name ?? null) as string | null,
+    avatar: (meta.avatar_url ?? null) as string | null,
   };
 }
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useUserStore();
+  if (isLoading) return null;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
 function LayoutRoutes() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname === "/login") {
+      void pauseBanner();
+    } else {
+      void resumeBanner();
+    }
+  }, [location.pathname]);
+
   return (
     <Layout>
       <Header />
       <Routes>
-        <Route path="/create" element={<CreateScreen />} />
         <Route path="/login" element={<LoginScreen />} />
-        <Route path="/my" element={<MyScreen />} />
-        <Route path="/game" element={<GameScreen />} />
         <Route path="/gamelist" element={<GameListScreen />} />
+        <Route
+          path="/create"
+          element={
+            <ProtectedRoute>
+              <CreateScreen />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my"
+          element={
+            <ProtectedRoute>
+              <MyScreen />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/game"
+          element={
+            <ProtectedRoute>
+              <GameScreen />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Layout>
   );
@@ -103,7 +146,11 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    void initAdMob();
+    const init = async () => {
+      await initAdMob();
+      await showBannerAd();
+    };
+    void init();
   }, []);
 
   return (
