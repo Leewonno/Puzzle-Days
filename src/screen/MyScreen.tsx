@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useUserStore } from "../stores/useUserStore";
+import { signOut } from "../utils/auth";
 
 type Tab = "created" | "played";
 
@@ -74,9 +76,16 @@ const MOCK_PLAYED = [
 ];
 
 export default function MyScreen() {
-  const { user } = useUserStore();
+  const navigate = useNavigate();
+  const { user, clearUser } = useUserStore();
   const [tab, setTab] = useState<Tab>("created");
   const [withdrawConfirm, setWithdrawConfirm] = useState(false);
+
+  function handleSignOut() {
+    clearUser();
+    navigate("/");
+    void signOut();
+  }
 
   const list = tab === "created" ? MOCK_CREATED : MOCK_PLAYED;
 
@@ -88,17 +97,32 @@ export default function MyScreen() {
         style={{ border: "1px solid #f0f0ff" }}
       >
         {/* 아바타 */}
-        <div
-          className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white"
-          style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}
-        >
-          {user ? "나" : "?"}
-        </div>
+        {user?.avatar ? (
+          <img
+            src={user.avatar}
+            className="w-14 h-14 rounded-full object-cover"
+          />
+        ) : (
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white"
+            style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}
+          >
+            {user?.name?.[0] ?? "?"}
+          </div>
+        )}
 
         <div className="text-center">
-          <p className="text-sm font-bold text-gray-800">김지소</p>
-          <p className="text-xs text-gray-400 mt-0.5">jisaw@gmail.com</p>
+          <p className="text-sm font-bold text-gray-800">{user?.name ?? ""}</p>
+          <p className="text-xs text-gray-400 mt-0.5">{user?.email ?? ""}</p>
         </div>
+
+        {/* 로그아웃 버튼 */}
+        <button
+          className="text-xs font-semibold text-gray-500 bg-gray-100 rounded-full px-4 py-1.5"
+          onClick={() => void handleSignOut()}
+        >
+          로그아웃
+        </button>
 
         {/* 회원탈퇴 버튼 */}
         {!withdrawConfirm ? (

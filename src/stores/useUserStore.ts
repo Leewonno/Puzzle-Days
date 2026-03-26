@@ -1,10 +1,17 @@
 import { create } from "zustand";
 
+export interface AppUser {
+  id: string;
+  email: string | null;
+  name: string | null;
+  avatar: string | null;
+}
+
 interface UserState {
-  user: { id: string } | null;
+  user: AppUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  setUser: (user: UserState["user"]) => void;
+  setUser: (user: AppUser | null) => void;
   clearUser: () => void;
   setLoading: (loading: boolean) => void;
 }
