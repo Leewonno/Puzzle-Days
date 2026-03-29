@@ -358,9 +358,7 @@ export default function MyScreen() {
             >
               주의
             </p>
-            <p className="text-xl font-extrabold text-gray-900 mt-1">
-              회원탈퇴
-            </p>
+            <p className="text-xl font-bold text-gray-900 mt-1">회원탈퇴</p>
             <p className="text-sm text-gray-400 mt-1 leading-relaxed">
               탈퇴하면 만든 퍼즐과 기록이
               <br />

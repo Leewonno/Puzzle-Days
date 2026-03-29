@@ -61,14 +61,12 @@ export function DifficultyModal({
         {/* 헤더 */}
         <div>
           <p
-            className="text-xs font-semibold tracking-widest"
+            className="text-xs font-semibold tracking-widest mb-2!"
             style={{ color: "#a5b4fc" }}
           >
             PUZZLE
           </p>
-          <p className="text-xl font-extrabold text-gray-900 mt-1">
-            난이도 선택
-          </p>
+          <p className="text-xl font-bold text-gray-900 mt-1">난이도 선택</p>
           {title && (
             <p className="text-sm text-gray-400 mt-0.5 truncate">{title}</p>
           )}
