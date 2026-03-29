@@ -5,6 +5,7 @@ import { ImagePlus, ZoomIn, ZoomOut } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useUserStore } from "../stores/useUserStore";
 import { uploadImage } from "../lib/storage";
+import { hasProfanity } from "../utils/profanity";
 
 export default function CreateScreen() {
   const navigate = useNavigate();
@@ -131,15 +132,28 @@ export default function CreateScreen() {
     onSuccess: () => navigate("/my"),
   });
 
-  const canCreate = !!imgSrc && title.trim().length > 0;
+  const titleHasProfanity = hasProfanity(title);
+  const canCreate = !!imgSrc && title.trim().length > 0 && !titleHasProfanity;
 
   return (
-    <div className="flex flex-col gap-5 pb-6">
+    <div className="flex flex-col gap-6">
+      {/* 페이지 타이틀 */}
+      <div className="flex flex-col gap-1">
+        <p className="text-2xl font-bold text-gray-900">나만의 퍼즐 만들기</p>
+        <p className="text-sm text-gray-400">
+          사진을 골라 나만의 퍼즐을 완성해요
+        </p>
+      </div>
+
       {/* 크롭 영역 */}
       <div
         ref={containerRef}
-        className="w-full rounded-2xl overflow-hidden relative select-none bg-gray-100"
-        style={{ aspectRatio: "1 / 1", touchAction: imgSrc ? "none" : "auto" }}
+        className="w-full rounded-2xl overflow-hidden relative select-none"
+        style={{
+          aspectRatio: "1 / 1",
+          touchAction: imgSrc ? "none" : "auto",
+          background: imgSrc ? "#000" : "#f0f0ff",
+        }}
         onPointerDown={imgSrc ? handlePointerDown : undefined}
         onPointerMove={imgSrc ? handlePointerMove : undefined}
         onPointerUp={imgSrc ? handlePointerUp : undefined}
@@ -162,7 +176,6 @@ export default function CreateScreen() {
                 userSelect: "none",
               }}
             />
-            {/* 3분할 가이드라인 */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
@@ -178,30 +191,26 @@ export default function CreateScreen() {
             className="absolute inset-0 flex flex-col items-center justify-center gap-3"
             onClick={() => fileInputRef.current?.click()}
           >
-            <div
-              className="w-20 h-20 rounded-2xl flex items-center justify-center"
-              style={{
-                background: "linear-gradient(135deg, #e0e7ff, #ede9fe)",
-              }}
-            >
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white shadow-sm">
               <ImagePlus
-                size={36}
+                size={28}
                 className="text-indigo-400"
                 strokeWidth={1.5}
               />
             </div>
-            <div className="text-center">
-              <p className="text-sm font-semibold text-gray-600">사진 선택</p>
-            </div>
+            <p className="text-sm font-semibold text-indigo-400">
+              사진 선택하기
+            </p>
+            <p className="text-xs text-gray-400">탭해서 갤러리에서 불러오기</p>
           </button>
         )}
       </div>
 
       {/* 줌 & 사진 변경 */}
       {imgSrc && (
-        <div className="flex items-center justify-between px-1">
+        <div className="flex items-center justify-between">
           <button
-            className="text-sm font-medium text-indigo-500"
+            className="text-sm font-semibold text-indigo-500 active:opacity-60 transition-opacity"
             onClick={() => fileInputRef.current?.click()}
           >
             사진 변경
@@ -225,39 +234,43 @@ export default function CreateScreen() {
 
       {/* 제목 입력 */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-semibold text-gray-700">퍼즐 이름</label>
+        {/* <label className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+          퍼즐 이름
+        </label> */}
         <input
           type="text"
-          placeholder="이름을 입력하세요"
+          placeholder="퍼즐 이름을 입력하세요"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           maxLength={30}
-          className="w-full px-4 py-3 rounded-xl border text-sm outline-none bg-white"
+          className="w-full px-0 py-2.5 text-base font-semibold text-gray-900 outline-none bg-transparent placeholder:text-gray-300"
           style={{
-            borderColor: title.length > 0 ? "#a5b4fc" : "#e5e7eb",
-            boxShadow:
-              title.length > 0 ? "0 0 0 3px rgba(99,102,241,0.1)" : "none",
+            borderBottom: `2px solid ${
+              title.length > 0 ? "#6366f1" : "#e5e7eb"
+            }`,
           }}
         />
-        <span className="text-xs text-gray-400 text-right">
-          {title.length} / 30
-        </span>
+        {titleHasProfanity ? (
+          <span className="text-xs text-red-400">사용할 수 없는 단어가 포함되어 있어요</span>
+        ) : (
+          <span className="text-xs text-gray-300 text-right">{title.length} / 30</span>
+        )}
       </div>
 
       {/* 만들기 버튼 */}
       <button
         disabled={!canCreate || createPuzzle.isPending}
-        className="w-full py-3 rounded-2xl font-semibold text-base transition-all active:scale-95"
+        className="w-full py-3.5 rounded-2xl font-bold text-base transition-all active:scale-95"
         style={{
           background:
             canCreate && !createPuzzle.isPending
               ? "linear-gradient(135deg, #6366f1, #8b5cf6)"
               : "#f3f4f6",
-          color: canCreate && !createPuzzle.isPending ? "white" : "#9ca3af",
+          color: canCreate && !createPuzzle.isPending ? "white" : "#d1d5db",
         }}
         onClick={() => createPuzzle.mutate()}
       >
-        만들기
+        {createPuzzle.isPending ? "업로드 중..." : "만들기"}
       </button>
 
       <input

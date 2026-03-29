@@ -92,6 +92,12 @@ export default function GameListScreen() {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* 페이지 타이틀 */}
+      <div>
+        <p className="text-2xl font-bold text-gray-900">퍼즐 목록</p>
+        <p className="text-sm text-gray-400 mt-1">플레이할 퍼즐을 골라보세요</p>
+      </div>
+
       {/* 정렬 탭 */}
       <div className="flex gap-2">
         {(["latest", "popular"] as SortKey[]).map((key) => (

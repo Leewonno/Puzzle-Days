@@ -43,7 +43,7 @@ export function CompletionModal({
       </p>
       <div className="flex flex-col gap-3 w-full">
         <button
-          className="bg-white text-indigo-500 rounded-xl py-3 px-6 font-semibold shadow hover:shadow-md transition-transform uppercase active:scale-95"
+          className="bg-indigo-500 text-white rounded-xl py-3 px-6 font-semibold shadow hover:shadow-md transition-transform uppercase active:scale-95"
           onClick={onRestart}
         >
           다시하기

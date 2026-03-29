@@ -172,32 +172,11 @@ export default function MyScreen() {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* 프로필 카드 */}
-      <div
-        className="bg-white rounded-2xl px-5 py-5 flex flex-col items-center gap-3 shadow"
-        style={{ border: "1px solid #f0f0ff" }}
-      >
-        {user?.avatar ? (
-          <img
-            src={user.avatar}
-            className="w-14 h-14 rounded-full object-cover"
-          />
-        ) : (
-          <div
-            className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white"
-            style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}
-          >
-            {user?.name?.[0] ?? "?"}
-          </div>
-        )}
-
-        <div className="text-center">
-          <p className="text-sm font-bold text-gray-800">{user?.name ?? ""}</p>
-          <p className="text-xs text-gray-400 mt-0.5">{user?.email ?? ""}</p>
-        </div>
-
+      {/* 페이지 타이틀 + 로그아웃 */}
+      <div className="flex items-center justify-between">
+        <p className="text-2xl font-bold text-gray-900">내 정보</p>
         <button
-          className="text-xs font-semibold text-gray-500 bg-gray-100 rounded-full px-4 py-1.5 active:scale-90 transition-transform"
+          className="text-xs font-semibold text-gray-500 bg-white rounded-full px-4 py-1.5 shadow-sm active:scale-90 transition-transform"
           onClick={async () => {
             await new Promise((resolve) => setTimeout(resolve, 120));
             void handleSignOut();
@@ -207,11 +186,29 @@ export default function MyScreen() {
         </button>
       </div>
 
+      {/* 프로필 행 */}
+      <div className="flex items-center gap-3">
+        {user?.avatar ? (
+          <img
+            src={user.avatar}
+            className="w-12 h-12 rounded-full object-cover"
+          />
+        ) : (
+          <div
+            className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white shrink-0"
+            style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}
+          >
+            {user?.name?.[0] ?? "?"}
+          </div>
+        )}
+        <div>
+          <p className="text-sm font-bold text-gray-900">{user?.name ?? ""}</p>
+          <p className="text-xs text-gray-400 mt-0.5">{user?.email ?? ""}</p>
+        </div>
+      </div>
+
       {/* 탭 */}
-      <div
-        className="flex gap-0 rounded-xl p-1"
-        style={{ background: "#f8f9ff" }}
-      >
+      <div className="flex gap-0 rounded-xl" style={{ background: "#f8f9ff" }}>
         <button
           className="flex-1 text-center text-xs font-semibold py-2 rounded-lg transition-colors"
           style={
@@ -353,29 +350,43 @@ export default function MyScreen() {
       </button>
 
       <Modal open={withdrawConfirm}>
-        <p className="text-base font-bold text-gray-800">회원탈퇴</p>
-        <p className="text-sm text-gray-500 text-center">
-          탈퇴하면 만든 퍼즐과 기록이 모두 삭제됩니다.
-        </p>
-        <div className="flex gap-3 w-full">
-          <button
-            className="flex-1 bg-gray-100 text-gray-600 rounded-xl py-3 font-semibold text-sm active:scale-95 transition-transform"
-            onClick={async () => {
-              await new Promise((resolve) => setTimeout(resolve, 120));
-              setWithdrawConfirm(false);
-            }}
-          >
-            취소
-          </button>
-          <button
-            className="flex-1 bg-red-400 text-white rounded-xl py-3 font-semibold text-sm active:scale-95 transition-transform"
-            onClick={async () => {
-              await new Promise((resolve) => setTimeout(resolve, 120));
-              void handleWithdraw();
-            }}
-          >
-            확인
-          </button>
+        <div className="w-full flex flex-col gap-5">
+          <div>
+            <p
+              className="text-xs font-semibold tracking-widest mb-2!"
+              style={{ color: "#fca5a5" }}
+            >
+              주의
+            </p>
+            <p className="text-xl font-extrabold text-gray-900 mt-1">
+              회원탈퇴
+            </p>
+            <p className="text-sm text-gray-400 mt-1 leading-relaxed">
+              탈퇴하면 만든 퍼즐과 기록이
+              <br />
+              모두 삭제됩니다.
+            </p>
+          </div>
+          <div className="flex gap-2 w-full">
+            <button
+              className="flex-1 py-3.5 rounded-2xl text-sm font-semibold text-gray-500 bg-gray-100 active:scale-95 transition-transform"
+              onClick={async () => {
+                await new Promise((resolve) => setTimeout(resolve, 120));
+                setWithdrawConfirm(false);
+              }}
+            >
+              취소
+            </button>
+            <button
+              className="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white bg-red-400 active:scale-95 transition-transform"
+              onClick={async () => {
+                await new Promise((resolve) => setTimeout(resolve, 120));
+                void handleWithdraw();
+              }}
+            >
+              탈퇴하기
+            </button>
+          </div>
         </div>
       </Modal>
 
