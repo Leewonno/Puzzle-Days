@@ -8,7 +8,7 @@ export default function HomeScreen() {
 
   return (
     <div
-      className="flex flex-col items-center justify-between px-6 pb-15 w-full"
+      className="flex flex-col items-center justify-between px-6 pb-25 w-full"
       style={{
         minHeight: "100svh",
         paddingTop: "calc(env(safe-area-inset-top) + 3rem)",
