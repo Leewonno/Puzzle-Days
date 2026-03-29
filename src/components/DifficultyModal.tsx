@@ -61,18 +61,24 @@ export function DifficultyModal({
 
         <div className="flex gap-2 w-full">
           <button
-            className="flex-2 py-3 rounded-xl text-sm font-semibold text-gray-500 bg-gray-100"
-            onClick={onCancel}
+            className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-500 bg-gray-100 active:scale-95 transition-transform"
+            onClick={async () => {
+              await new Promise((resolve) => setTimeout(resolve, 120));
+              onCancel();
+            }}
           >
             취소
           </button>
           <button
-            className="py-3 rounded-xl text-sm font-bold text-white"
+            className="py-3 rounded-xl text-sm font-bold text-white active:scale-95 transition-transform"
             style={{
               background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-              flex: 2,
+              flex: 1,
             }}
-            onClick={onConfirm}
+            onClick={async () => {
+              await new Promise((resolve) => setTimeout(resolve, 120));
+              onConfirm();
+            }}
           >
             시작하기
           </button>

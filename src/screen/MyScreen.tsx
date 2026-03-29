@@ -6,6 +6,7 @@ import { useGameStore } from "../stores/useGameStore";
 import { signOut } from "../utils/auth";
 import { supabase } from "../lib/supabase";
 import { DifficultyModal } from "../components/DifficultyModal";
+import { Modal } from "../components/Modal";
 
 type Tab = "created" | "played";
 
@@ -196,36 +197,14 @@ export default function MyScreen() {
         </div>
 
         <button
-          className="text-xs font-semibold text-gray-500 bg-gray-100 rounded-full px-4 py-1.5"
-          onClick={() => void handleSignOut()}
+          className="text-xs font-semibold text-gray-500 bg-gray-100 rounded-full px-4 py-1.5 active:scale-90 transition-transform"
+          onClick={async () => {
+            await new Promise((resolve) => setTimeout(resolve, 120));
+            void handleSignOut();
+          }}
         >
           로그아웃
         </button>
-
-        {!withdrawConfirm ? (
-          <button
-            className="text-xs text-red-300 underline"
-            onClick={() => setWithdrawConfirm(true)}
-          >
-            회원탈퇴
-          </button>
-        ) : (
-          <div className="flex gap-2 items-center">
-            <p className="text-xs text-gray-500">정말 탈퇴할까요?</p>
-            <button
-              className="text-xs font-semibold text-red-400 underline"
-              onClick={() => void handleWithdraw()}
-            >
-              탈퇴
-            </button>
-            <button
-              className="text-xs text-gray-400"
-              onClick={() => setWithdrawConfirm(false)}
-            >
-              취소
-            </button>
-          </div>
-        )}
       </div>
 
       {/* 탭 */}
@@ -365,6 +344,40 @@ export default function MyScreen() {
       {isFetchingNextPage && (
         <p className="text-center text-xs text-gray-400 pb-2">불러오는 중...</p>
       )}
+
+      <button
+        className="text-xs text-red-300 underline"
+        onClick={() => setWithdrawConfirm(true)}
+      >
+        회원탈퇴
+      </button>
+
+      <Modal open={withdrawConfirm}>
+        <p className="text-base font-bold text-gray-800">회원탈퇴</p>
+        <p className="text-sm text-gray-500 text-center">
+          탈퇴하면 만든 퍼즐과 기록이 모두 삭제됩니다.
+        </p>
+        <div className="flex gap-3 w-full">
+          <button
+            className="flex-1 bg-gray-100 text-gray-600 rounded-xl py-3 font-semibold text-sm active:scale-95 transition-transform"
+            onClick={async () => {
+              await new Promise((resolve) => setTimeout(resolve, 120));
+              setWithdrawConfirm(false);
+            }}
+          >
+            취소
+          </button>
+          <button
+            className="flex-1 bg-red-400 text-white rounded-xl py-3 font-semibold text-sm active:scale-95 transition-transform"
+            onClick={async () => {
+              await new Promise((resolve) => setTimeout(resolve, 120));
+              void handleWithdraw();
+            }}
+          >
+            확인
+          </button>
+        </div>
+      </Modal>
 
       <DifficultyModal
         open={selectedPuzzle !== null}

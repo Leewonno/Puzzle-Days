@@ -8,7 +8,7 @@ export default function HomeScreen() {
 
   return (
     <div
-      className="flex flex-col items-center justify-between px-6 pb-25 w-full"
+      className="flex flex-col items-center justify-between px-4 pb-25 w-full"
       style={{
         minHeight: "100svh",
         paddingTop: "calc(env(safe-area-inset-top) + 3rem)",
@@ -22,33 +22,35 @@ export default function HomeScreen() {
           className="rounded-3xl"
           style={{ width: 350, height: 350 }}
         />
-
-        {/* 타이틀 */}
-        {/* <div className="text-center flex flex-col gap-4">
-          <p className="text-gray-400 text-sm mt-2">
-            사진으로 만드는 나만의 퍼즐
-          </p>
-        </div> */}
       </div>
 
       {/* 버튼 영역 */}
       <div className="w-full flex flex-col gap-3 pb-5">
         <button
-          className="w-full text-white rounded-2xl py-3 font-semibold text-lg shadow-lg"
+          className="w-full text-white rounded-2xl py-3 font-semibold text-lg shadow-lg active:scale-95 transition-transform"
           style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}
-          onClick={() => navigate("/gamelist")}
+          onClick={async () => {
+            await new Promise((resolve) => setTimeout(resolve, 120));
+            navigate("/gamelist");
+          }}
         >
-          시작하기
+          시작
         </button>
         <button
-          className="w-full bg-white text-gray-700 rounded-2xl py-3 font-semibold shadow"
-          onClick={() => navigate("/create")}
+          className="w-full bg-white text-gray-700 rounded-2xl py-3 font-semibold shadow active:scale-95 transition-transform"
+          onClick={async () => {
+            await new Promise((resolve) => setTimeout(resolve, 120));
+            navigate("/create");
+          }}
         >
-          내 퍼즐 만들기
+          퍼즐 만들기
         </button>
         <button
-          className="w-full text-gray-400 py-3 font-medium text-sm"
-          onClick={() => navigate(isAuthenticated ? "/my" : "/login")}
+          className="w-full text-gray-400 py-3 font-medium text-sm active:scale-90 transition-transform"
+          onClick={async () => {
+            await new Promise((resolve) => setTimeout(resolve, 120));
+            navigate(isAuthenticated ? "/my" : "/login");
+          }}
         >
           {isAuthenticated ? "내 정보" : "로그인"}
         </button>
