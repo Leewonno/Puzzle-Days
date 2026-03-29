@@ -4,6 +4,7 @@ import { useUserStore } from "../../stores/useUserStore";
 import { playFanfare, playSuccessSound } from "../../utils/sound";
 import { supabase } from "../../lib/supabase";
 import { showInterstitialAd } from "../../utils/admob";
+import { usePlayScoreStore } from "../../stores/usePlayScoreStore";
 import { CompletionModal } from "./components/CompletionModal";
 import { PuzzleBoard } from "./components/PuzzleBoard";
 import type { Piece, BoardCell, Selected } from "./types";
@@ -93,6 +94,7 @@ function drawPiecePath(
 export function Game() {
   const { img, gridSize, puzzleId } = useGameStore();
   const { user } = useUserStore();
+  const { playScore, addScore, resetScore } = usePlayScoreStore();
   const [pieces, setPieces] = useState<Piece[]>([]);
   const [board, setBoard] = useState<BoardCell[]>([]);
   const [selected, setSelected] = useState<Selected>(null);
@@ -147,6 +149,7 @@ export function Game() {
       stopTimer();
       void playFanfare();
       void saveRecord();
+      addScore(gridSize);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCompleted]);
@@ -154,7 +157,10 @@ export function Game() {
   useEffect(() => () => stopTimer(), []);
 
   const handleRestart = async () => {
-    await showInterstitialAd();
+    if (playScore >= 6) {
+      await showInterstitialAd();
+      resetScore();
+    }
     fanfarePlayed.current = false;
     zIndexCounter.current = 1;
     resetTimer();

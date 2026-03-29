@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { DifficultyModal } from "../components/DifficultyModal";
 import { useGameStore } from "../stores/useGameStore";
+import { usePlayScoreStore } from "../stores/usePlayScoreStore";
+import { showInterstitialAd } from "../utils/admob";
 import { supabase } from "../lib/supabase";
 
 type SortKey = "latest" | "popular";
@@ -41,6 +43,7 @@ async function fetchPuzzles({
 export default function GameListScreen() {
   const navigate = useNavigate();
   const setGame = useGameStore((s) => s.setGame);
+  const { playScore, resetScore } = usePlayScoreStore();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const [sort, setSort] = useState<SortKey>("latest");
@@ -83,8 +86,12 @@ export default function GameListScreen() {
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  function handleStart() {
+  async function handleStart() {
     if (!selectedPuzzle) return;
+    if (playScore >= 6) {
+      await showInterstitialAd();
+      resetScore();
+    }
     setGame(selectedPuzzle.img, gridSize, selectedPuzzle.id);
     setSelectedPuzzle(null);
     navigate("/game");

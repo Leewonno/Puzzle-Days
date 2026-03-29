@@ -7,7 +7,9 @@ import {
 } from "@tanstack/react-query";
 import { useUserStore } from "../stores/useUserStore";
 import { useGameStore } from "../stores/useGameStore";
+import { usePlayScoreStore } from "../stores/usePlayScoreStore";
 import { signOut } from "../utils/auth";
+import { showInterstitialAd } from "../utils/admob";
 import { supabase } from "../lib/supabase";
 import { DifficultyModal } from "../components/DifficultyModal";
 import { Modal } from "../components/Modal";
@@ -86,6 +88,7 @@ export default function MyScreen() {
   const navigate = useNavigate();
   const { user, clearUser } = useUserStore();
   const setGame = useGameStore((s) => s.setGame);
+  const { playScore, resetScore } = usePlayScoreStore();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<Tab>("created");
   const [withdrawConfirm, setWithdrawConfirm] = useState(false);
@@ -120,8 +123,12 @@ export default function MyScreen() {
     navigate("/");
   }
 
-  function handleStart() {
+  async function handleStart() {
     if (!selectedPuzzle) return;
+    if (playScore >= 6) {
+      await showInterstitialAd();
+      resetScore();
+    }
     setGame(selectedPuzzle.img, gridSize, selectedPuzzle.id);
     setSelectedPuzzle(null);
     navigate("/game");
