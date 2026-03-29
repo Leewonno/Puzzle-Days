@@ -22,23 +22,40 @@ export function CompletionModal({
 
   return (
     <Modal open={open}>
-      <div className="text-5xl">🎉</div>
-      <p className="text-xl font-bold text-gray-800">SUCCESS!</p>
+      <div className="flex items-end gap-2" key={open ? "open" : "closed"}>
+        {([0, 150, 300] as const).map((delay, i) => (
+          <span
+            key={delay}
+            style={{
+              display: "inline-block",
+              fontSize: i === 1 ? "3rem" : "2.1rem",
+              opacity: 0,
+              animation: `starPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms forwards`,
+            }}
+          >
+            ⭐
+          </span>
+        ))}
+      </div>
+      <p className="text-xl font-bold text-gray-800">CLEAR!</p>
       <p className="text-gray-500 text-sm font-mono">
         {formatTime(elapsedSeconds)}
       </p>
       <div className="flex flex-col gap-3 w-full">
         <button
-          className="bg-white text-indigo-500 rounded-xl py-3 px-6 font-semibold shadow hover:shadow-md active:bg-gray-50 transition-shadow uppercase"
+          className="bg-white text-indigo-500 rounded-xl py-3 px-6 font-semibold shadow hover:shadow-md transition-transform uppercase active:scale-95"
           onClick={onRestart}
         >
-          Try Again
+          다시하기
         </button>
         <button
-          className="bg-white text-gray-700 rounded-xl py-3 px-6 font-semibold shadow hover:shadow-md active:bg-gray-50 transition-shadow uppercase"
-          onClick={() => navigate(-1)}
+          className="bg-white text-gray-700 rounded-xl py-3 px-6 font-semibold shadow hover:shadow-md transition-transform uppercase active:scale-95"
+          onClick={async () => {
+            await new Promise((resolve) => setTimeout(resolve, 120));
+            navigate(-1);
+          }}
         >
-          Exit
+          나가기
         </button>
       </div>
     </Modal>

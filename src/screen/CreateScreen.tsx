@@ -192,9 +192,6 @@ export default function CreateScreen() {
             </div>
             <div className="text-center">
               <p className="text-sm font-semibold text-gray-600">사진 선택</p>
-              <p className="text-xs text-gray-400 mt-1">
-                갤러리에서 이미지를 불러옵니다
-              </p>
             </div>
           </button>
         )}
@@ -228,10 +225,10 @@ export default function CreateScreen() {
 
       {/* 제목 입력 */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-semibold text-gray-700">퍼즐 제목</label>
+        <label className="text-sm font-semibold text-gray-700">퍼즐 이름</label>
         <input
           type="text"
-          placeholder="제목을 입력하세요"
+          placeholder="이름을 입력하세요"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           maxLength={30}
@@ -250,7 +247,7 @@ export default function CreateScreen() {
       {/* 만들기 버튼 */}
       <button
         disabled={!canCreate || createPuzzle.isPending}
-        className="w-full py-4 rounded-2xl font-bold text-base transition-all active:scale-95"
+        className="w-full py-3 rounded-2xl font-semibold text-base transition-all active:scale-95"
         style={{
           background:
             canCreate && !createPuzzle.isPending
