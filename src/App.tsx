@@ -17,7 +17,12 @@ import GameListScreen from "./screen/GameListScreen";
 import { Header } from "./nav/Header";
 import { Layout } from "./components";
 import { useAndroidBackButton } from "./hooks/useAndroidBackButton";
-import { initAdMob, showBannerAd, resumeBanner, pauseBanner } from "./utils/admob";
+import {
+  initAdMob,
+  showBannerAd,
+  resumeBanner,
+  pauseBanner,
+} from "./utils/admob";
 import { supabase } from "./lib/supabase";
 import { useUserStore } from "./stores/useUserStore";
 import type { AppUser } from "./stores/useUserStore";
@@ -42,14 +47,23 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function LayoutRoutes() {
   const location = useLocation();
+  const { isAuthenticated, clearUser } = useUserStore();
 
   useEffect(() => {
     if (location.pathname === "/login") {
-      void pauseBanner();
+      pauseBanner();
     } else {
-      void resumeBanner();
+      resumeBanner();
     }
   }, [location.pathname]);
+
+  // 로그아웃, 회원탈퇴 팔로우
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    supabase.auth.getUser().then(({ error }) => {
+      if (error) clearUser();
+    });
+  }, [location.pathname, isAuthenticated, clearUser]);
 
   return (
     <Layout>
@@ -92,7 +106,7 @@ function AppContent() {
 
   // 세션 초기화 + 인증 상태 변화 감지
   useEffect(() => {
-    void supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ? toAppUser(session.user) : null);
       setLoading(false);
     });
@@ -137,11 +151,11 @@ function AppContent() {
       );
 
       cleanup = () => {
-        void listener.remove();
+        listener.remove();
       };
     };
 
-    void setup();
+    setup();
     return () => cleanup?.();
   }, []);
 
@@ -150,7 +164,7 @@ function AppContent() {
       await initAdMob();
       await showBannerAd();
     };
-    void init();
+    init();
   }, []);
 
   return (

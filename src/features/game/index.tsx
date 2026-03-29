@@ -406,35 +406,52 @@ export function Game() {
         >
           {isGenerating ? (
             <div className="flex flex-1 items-center justify-center gap-2 text-gray-400 text-sm">
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              <svg
+                className="animate-spin h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8H4z"
+                />
               </svg>
               조각 생성 중...
             </div>
-          ) : pieces.map((piece, i) => (
-            <img
-              key={i}
-              src={piece.src}
-              className="h-24 shrink-0 cursor-pointer"
-              style={{
-                borderRadius: 8,
-                outline:
-                  selected?.from === "storage" && selected.index === i
-                    ? "2px solid rgba(99,102,241,0.8)"
-                    : undefined,
-                outlineOffset: 2,
-                opacity:
-                  selected?.from === "storage" && selected.index !== i
-                    ? 0.45
-                    : 1,
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                handlePieceTap(piece, i);
-              }}
-            />
-          ))}
+          ) : (
+            pieces.map((piece, i) => (
+              <img
+                key={i}
+                src={piece.src}
+                className="h-24 shrink-0 cursor-pointer"
+                style={{
+                  borderRadius: 8,
+                  outline:
+                    selected?.from === "storage" && selected.index === i
+                      ? "2px solid rgba(99,102,241,0.8)"
+                      : undefined,
+                  outlineOffset: 2,
+                  opacity:
+                    selected?.from === "storage" && selected.index !== i
+                      ? 0.45
+                      : 1,
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePieceTap(piece, i);
+                }}
+              />
+            ))
+          )}
         </div>
       </div>
 
