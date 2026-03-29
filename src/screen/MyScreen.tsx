@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useUserStore } from "../stores/useUserStore";
 import { useGameStore } from "../stores/useGameStore";
 import { signOut } from "../utils/auth";
@@ -82,12 +86,27 @@ export default function MyScreen() {
   const navigate = useNavigate();
   const { user, clearUser } = useUserStore();
   const setGame = useGameStore((s) => s.setGame);
+  const queryClient = useQueryClient();
   const [tab, setTab] = useState<Tab>("created");
   const [withdrawConfirm, setWithdrawConfirm] = useState(false);
+  const [menuOpenId, setMenuOpenId] = useState<number | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
   const [selectedPuzzle, setSelectedPuzzle] = useState<SelectedPuzzle | null>(
     null,
   );
   const [gridSize, setGridSize] = useState(8);
+
+  const deletePuzzle = useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from("puzzle").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["myPuzzles"] });
+      void queryClient.invalidateQueries({ queryKey: ["playedPuzzles"] });
+      setDeleteTargetId(null);
+    },
+  });
 
   function handleSignOut() {
     clearUser();
@@ -267,8 +286,12 @@ export default function MyScreen() {
             {createdPuzzles.map((puzzle) => (
               <div
                 key={puzzle.id}
-                className="bg-white rounded-2xl overflow-hidden shadow cursor-pointer active:scale-95 transition-transform"
+                className="bg-white rounded-2xl overflow-hidden shadow cursor-pointer active:scale-95 transition-transform relative"
                 onClick={() => {
+                  if (menuOpenId !== null) {
+                    setMenuOpenId(null);
+                    return;
+                  }
                   setSelectedPuzzle({
                     id: puzzle.id,
                     title: puzzle.title,
@@ -292,6 +315,35 @@ export default function MyScreen() {
                     {new Date(puzzle.created_at).toLocaleDateString("ko-KR")}
                   </p>
                 </div>
+                {/* ⋮ 메뉴 버튼 */}
+                <button
+                  className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
+                  style={{ background: "rgba(0,0,0,0.35)" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpenId(menuOpenId === puzzle.id ? null : puzzle.id);
+                  }}
+                >
+                  <span className="text-white text-sm leading-none">⋮</span>
+                </button>
+                {/* 드롭다운 */}
+                {menuOpenId === puzzle.id && (
+                  <div
+                    className="absolute top-10 right-2 bg-white rounded-xl shadow-lg py-1 z-10"
+                    style={{ minWidth: 80 }}
+                  >
+                    <button
+                      className="w-full px-4 py-2.5 text-sm font-semibold text-red-400 text-left active:bg-gray-50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteTargetId(puzzle.id);
+                        setMenuOpenId(null);
+                      }}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -383,6 +435,44 @@ export default function MyScreen() {
               }}
             >
               탈퇴하기
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal open={deleteTargetId !== null}>
+        <div className="w-full flex flex-col gap-5">
+          <div>
+            <p
+              className="text-xs font-semibold tracking-widest mb-2!"
+              style={{ color: "#fca5a5" }}
+            >
+              삭제
+            </p>
+            <p className="text-xl font-bold text-gray-900 mt-1">퍼즐 삭제</p>
+            <p className="text-sm text-gray-400 mt-1 leading-relaxed">
+              삭제한 퍼즐은 복구할 수 없어요.
+            </p>
+          </div>
+          <div className="flex gap-2 w-full">
+            <button
+              className="flex-1 py-3.5 rounded-2xl text-sm font-semibold text-gray-500 bg-gray-100 active:scale-95 transition-transform"
+              onClick={async () => {
+                await new Promise((resolve) => setTimeout(resolve, 120));
+                setDeleteTargetId(null);
+              }}
+            >
+              취소
+            </button>
+            <button
+              className="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white bg-red-400 active:scale-95 transition-transform"
+              onClick={async () => {
+                await new Promise((resolve) => setTimeout(resolve, 120));
+                if (deleteTargetId !== null)
+                  deletePuzzle.mutate(deleteTargetId);
+              }}
+            >
+              삭제하기
             </button>
           </div>
         </div>
